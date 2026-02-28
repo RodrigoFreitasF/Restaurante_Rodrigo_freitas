@@ -1,14 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarmitaTech - Login</title>
-    <style>body { font-family: sans-serif; display: flex; justify-content: center; margin-top: 100px; background: #f4f4f4; }</style>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            /* Fundo vibrante que vai aparecer através do vidro */
+            background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%); 
+        }
+
+        form { 
+            /* --- INÍCIO DO EFEITO DE VIDRO --- */
+            
+            /* Cor de fundo branca com transparência (0.25 = 25% opacidade) */
+            background: rgba(255, 255, 255, 0.25);
+            
+            /* O desfoque do fundo (a mágica principal) */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px); /* Para compatibilidade com Safari */
+            
+            /* Uma borda fina e semi-transparente para definir o contorno */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            
+            /* Sombra mais suave para dar profundidade */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            
+            /* --- FIM DO EFEITO DE VIDRO --- */
+
+            padding: 40px 30px;
+            border-radius: 16px; 
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            /* Mudei levemente a cor para destacar mais no vidro */
+            color: #222; 
+            margin-bottom: 30px;
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.5); /* Borda mais sutil */
+            
+            /* Deixei os inputs levemente transparentes também para combinar */
+            background: rgba(255, 255, 255, 0.9); 
+            
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease; 
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #fc6076;
+            background: white; /* Fica totalmente branco ao focar */
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #fc6076;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 5px;
+            /* Uma sombra colorida no botão para dar um "pop" */
+            box-shadow: 0 4px 15px rgba(252, 96, 118, 0.4);
+        }
+
+        button:hover {
+            background-color: #e04a5f;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+    </style>
 </head>
 <body>
-    <form action="/login" method="POST" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <h2>🥪 MarmitaTech Login</h2>
-        <input type="text" name="username" placeholder="Usuário" required><br><br>
-        <input type="password" name="password" placeholder="Senha" required><br><br>
+    <form action="/login" method="POST">
+        <img width="150" src=/alvin.jpg alt="Deu nao papai">
+        <img src="" alt="">
+        <h2> MarmitaTech</h2>
+        <input type="text" name="username" placeholder="Usuário" required>
+        <input type="password" name="password" placeholder="Senha" required>
         <button type="submit">Entrar</button>
     </form>
 </body>
