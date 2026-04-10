@@ -228,8 +228,41 @@
             <input type="password" name="password" placeholder="Ignition_Key" required>
         </div>
         <button type="submit">Acelerar</button>
-        <button type="submit" formaction="/register" class="btn-register">Cadastrar</button>
+        <button type="button" id="btnCadastrar" class="btn-register">Cadastrar</button>
     </form>
+
+    <script>
+        document.getElementById('btnCadastrar').addEventListener('click', async () => {
+            const usernameInput = document.querySelector('input[name="username"]');
+            const passwordInput = document.querySelector('input[name="password"]');
+            
+            if (!usernameInput.value || !passwordInput.value) {
+                alert('⚠️ Insira um Rider_Name e uma Ignition_Key antes de cadastrar!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        username: usernameInput.value,
+                        password: passwordInput.value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Erro de conexão ao tentar cadastrar o piloto.');
+            }
+        });
+    </script>
 </body>
 
 </html>

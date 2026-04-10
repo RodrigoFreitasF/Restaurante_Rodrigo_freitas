@@ -76,9 +76,11 @@ app.post('/register', async (req, res) => {
     try {
         // Chama a função designada para registrar salvando com o hash
         await registerUserNoBanco(username, password);
-        res.redirect('/');
+        // Retorna reposta JSON para que a página não seja recarregada
+        res.json({ success: true, message: 'Piloto cadastrado com sucesso! Pode Acelerar!' });
     } catch (err) {
-        res.status(500).send("Erro ao cadastrar usuário.");
+        console.error("Erro interno no cadastro:", err);
+        res.status(500).json({ success: false, message: 'Erro ao cadastrar: Nome de piloto já existe ou banco fora do ar.' });
     }
 });
 
