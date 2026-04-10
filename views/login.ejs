@@ -168,6 +168,16 @@
             transform: skewX(-5deg) scale(0.95);
         }
 
+        button.btn-register {
+            background: linear-gradient(90deg, #ff0055, #b3003c);
+            color: #fff;
+            box-shadow: 0 0 15px #ff0055;
+        }
+
+        button.btn-register:hover {
+            box-shadow: 0 0 25px #ff0055, 0 0 40px #ff0055;
+        }
+
         img.avatar {
             border-radius: 8px;
             margin-bottom: 20px;
@@ -218,6 +228,7 @@
             <input type="password" name="password" placeholder="Ignition_Key" required>
         </div>
         <button type="submit">Acelerar</button>
+        <button type="submit" formaction="/register" class="btn-register">Cadastrar</button>
     </form>
 </body>
 

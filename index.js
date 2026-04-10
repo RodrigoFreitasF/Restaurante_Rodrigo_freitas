@@ -8,6 +8,7 @@ const app = express();
 
 const dbConfig = {
     host: process.env.DB_HOST || 'db',
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'user',
     password: process.env.DB_PASS || 'password',
     database: process.env.DB_NAME || 'marmitadb'
@@ -22,6 +23,14 @@ async function connectWithRetry() {
             pool = mysql.createPool(dbConfig);
             await pool.query('SELECT 1');
             console.log('✅ [DATABASE] Conectado ao MySQL com sucesso!');
+            
+            const [adminRows] = await pool.query('SELECT * FROM users WHERE username = "admin"');
+            if (adminRows.length === 0) {
+                const adminHash = await bcrypt.hash('admin123', 10);
+                await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', ['admin', adminHash]);
+                console.log('✅ [DATABASE] Usuário admin inserido com hash.');
+            }
+            
             return;
         } catch (err) {
             console.log(`⚠️ [DATABASE] Tentativa ${i}/10 falhou. Aguardando...`);
@@ -54,11 +63,19 @@ app.post('/login', async (req, res) => {
 
 app.get('/register', (req, res) => res.render('register'));
 
+// Função específica para cadastrar e enviar a senha com hash para o banco
+async function registerUserNoBanco(username, plainTextPassword) {
+    // 1. Gera o hash da senha usando o bcrypt
+    const hash = await bcrypt.hash(plainTextPassword, 10);
+    // 2. Insere no banco com segurança
+    await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
+}
+
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const hash = await bcrypt.hash(password, 10);
-        await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
+        // Chama a função designada para registrar salvando com o hash
+        await registerUserNoBanco(username, password);
         res.redirect('/');
     } catch (err) {
         res.status(500).send("Erro ao cadastrar usuário.");

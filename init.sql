@@ -16,5 +16,8 @@ CREATE TABLE IF NOT EXISTS orders (
     status VARCHAR(20) DEFAULT 'Aberto'
 );
 
-INSERT INTO users (username, password) VALUES ('admin', 'admin123');
-INSERT INTO items (name, category) VALUES ('Arroz Branco', 'Base'), ('Feijão Preto', 'Grão');
+
+INSERT INTO
+    items (name, category)
+VALUES ('Arroz Branco', 'Base'),
+    ('Feijão Preto', 'Grão');
