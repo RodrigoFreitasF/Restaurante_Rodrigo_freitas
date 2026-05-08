@@ -227,21 +227,91 @@
             font-size: 15px;
             text-align: center;
         }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 250px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .kanban-column h3 {
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0;
+        }
+
+        .kanban-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-card h4 {
+            font-size: 15px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .kanban-card p {
+            color: #8b92a5;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .btn-advance {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fca311;
+            border: 1px solid rgba(252, 163, 17, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-advance:hover {
+            background: rgba(252, 163, 17, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1><div class="logo-dot"></div> ByteBistrô</h1>
-        <a href="/" class="logout-btn">Sair da conta</a>
+        <div style="display:flex; gap:16px; align-items:center;">
+            <a href="/admin/export" style="background:#fca311; color:#0f1115; font-weight:600;" class="logout-btn">Baixar Relatório CSV</a>
+            <a href="/" class="logout-btn">Sair da conta</a>
+        </div>
     </header>
 
     <main>
         <div class="grid">
             <div class="card">
-                <h3>Adicionar Ingrediente</h3>
+                <h3>Adicionar Ingrediente / Marmita</h3>
                 <form action="/add-item" method="POST">
                     <input type="text" name="name" placeholder="Nome (Ex: Batata Doce)" required>
                     <input type="text" name="category" placeholder="Categoria (Ex: Carboidrato)">
+                    <input type="number" step="0.01" min="0.01" name="price" placeholder="Preço (Ex: 15.50)" required>
                     <button type="submit">Cadastrar Item</button>
                 </form>
             </div>
@@ -253,7 +323,12 @@
                         <% items.forEach(item => { %>
                             <li>
                                 <span><%= item.name %></span>
-                                <span class="category-badge"><%= item.category || 'Geral' %></span>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <% if (item.price) { %>
+                                        <span style="color:#fca311; font-weight:600;">R$ <%= parseFloat(item.price).toFixed(2) %></span>
+                                    <% } %>
+                                    <span class="category-badge"><%= item.category || 'Geral' %></span>
+                                </div>
                             </li>
                         <% }) %>
                     <% } else { %>
@@ -266,9 +341,91 @@
         </div>
 
         <div class="kanban-section">
-            <h2>Pedidos Ativos</h2>
-            <div class="coming-soon">
-                Sistema de Kanban e controle de pedidos será disponibilizado na próxima atualização.
+            <h2>Registrar Nova Venda</h2>
+            <div class="card" style="margin-bottom: 32px;">
+                <form action="/orders" method="POST" style="flex-direction: row; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Nome do Cliente</label>
+                        <input type="text" name="customer_name" placeholder="Ex: João Silva" required>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Marmita Selecionada</label>
+                        <select name="item_name" required style="width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-family: 'Inter', sans-serif; font-size: 15px; outline: none;">
+                            <option value="">Selecione uma marmita...</option>
+                            <% if (items && items.length > 0) { %>
+                                <% items.forEach(item => { %>
+                                    <option value="<%= item.name %>"><%= item.name %> - R$ <%= parseFloat(item.price || 0).toFixed(2) %></option>
+                                <% }) %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <button type="submit" style="margin-top:0; height:47px;">Registrar Pedido</button>
+                </form>
+            </div>
+
+            <h2>Painel Kanban da Cozinha</h2>
+            <div class="kanban-board">
+                <!-- Coluna: Aberto -->
+                <div class="kanban-column">
+                    <h3>Aberto</h3>
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Aberto').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #ff6b6b;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Avançar para Cozinha →</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+
+                <!-- Coluna: Cozinha -->
+                <div class="kanban-column">
+                    <h3>Cozinha</h3>
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Cozinha').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #fca311;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Avançar para Entrega →</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+
+                <!-- Coluna: Entrega -->
+                <div class="kanban-column">
+                    <h3>Entrega</h3>
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Entrega').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #4facfe;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Marcar como Entregue ✓</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+
+                <!-- Coluna: Entregue -->
+                <div class="kanban-column" style="opacity: 0.7;">
+                    <h3>Entregue</h3>
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Entregue').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #00f2fe;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <!-- Sem botão de avançar na última etapa -->
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
             </div>
         </div>
     </main>

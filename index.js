@@ -2,18 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const mysql = require('mysql2/promise');
 
 const app = express();
 
-/*
-// ==========================================
-// CÓDIGO DO BANCO DE DADOS MYSQL (COMENTADO)
-// ==========================================
-const mysql = require('mysql2/promise');
+// Middlewares
+app.get('/bg-login.jpg', (req, res) => res.sendFile(path.join(__dirname, 'foto_restaurante.png')));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
+// Configuração do Banco de Dados
 const dbConfig = {
-    host: process.env.DB_HOST || 'db',
-    port: process.env.DB_PORT || 3306,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3307,
     user: process.env.DB_USER || 'user',
     password: process.env.DB_PASS || 'password',
     database: process.env.DB_NAME || 'marmitadb'
@@ -29,7 +31,7 @@ async function connectWithRetry() {
             await pool.query('SELECT 1');
             console.log('✅ [DATABASE] Conectado ao MySQL com sucesso!');
             
-            const [adminRows] = await pool.query('SELECT * FROM users WHERE username = "admin"');
+            const [adminRows] = await pool.query('SELECT * FROM users WHERE username = ?', ['admin']);
             if (adminRows.length === 0) {
                 const adminHash = await bcrypt.hash('admin123', 10);
                 await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', ['admin', adminHash]);
@@ -44,83 +46,15 @@ async function connectWithRetry() {
     process.exit(1);
 }
 
+// Rotas
+app.get('/', (req, res) => res.render('login'));
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
         const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
         if (rows.length > 0) {
             const user = rows[0];
-            const match = await bcrypt.compare(password, user.password);
-            if (match) return res.redirect('/dashboard');
-        }
-        res.send('<h1>Login Inválido</h1><a href="/">Voltar</a>');
-    } catch (err) {
-        res.status(500).send("Erro no banco.");
-    }
-});
-
-app.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const hash = await bcrypt.hash(password, 10);
-        await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
-        res.json({ success: true, message: 'Conta criada com sucesso!' });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Erro ao cadastrar.' });
-    }
-});
-
-app.post('/add-item', async (req, res) => {
-    const { name, category } = req.body;
-    try {
-        await pool.query('INSERT INTO items (name, category) VALUES (?, ?)', [name, category]);
-        res.redirect('/dashboard');
-    } catch (err) {
-        res.status(500).send("Erro ao adicionar");
-    }
-});
-
-app.get('/dashboard', async (req, res) => {
-    const [items] = await pool.query('SELECT * FROM items');
-    const [orders] = await pool.query('SELECT * FROM orders');
-    res.render('dashboard', { items, orders });
-});
-
-connectWithRetry().then(() => {
-    app.listen(3000, () => console.log('🚀 BYTEBISTRÔ PRO ONLINE NA PORTA 3000'));
-});
-// ==========================================
-*/
-
-
-// ==========================================
-// CÓDIGO ATUAL: VALIDAÇÃO EM MEMÓRIA (CÓDIGO)
-// ==========================================
-const users = [];
-const items = [
-    { name: 'Arroz Branco', category: 'Base' },
-    { name: 'Feijão Preto', category: 'Grão' }
-];
-const orders = [];
-
-// Cria o usuário admin padrão
-(async () => {
-    const adminHash = await bcrypt.hash('admin123', 10);
-    users.push({ username: 'admin', password: adminHash });
-    console.log('✅ [IN-MEMORY DB] Usuário admin carregado (Login: admin / Senha: admin123).');
-})();
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-app.get('/', (req, res) => res.render('login'));
-
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const user = users.find(u => u.username === username);
-        if (user) {
             const match = await bcrypt.compare(password, user.password);
             if (match) return res.redirect('/dashboard');
         }
@@ -132,7 +66,7 @@ app.post('/login', async (req, res) => {
             </body>
         `);
     } catch (err) {
-        console.error(err);
+        console.error("Erro no login:", err);
         res.status(500).send(`
             <body style="background:#0f1115;color:#ffffff;font-family:'Inter', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0;">
                 <h1 style="color:#ff6b6b;margin-bottom:8px;">Erro Interno</h1>
@@ -148,11 +82,12 @@ app.get('/register', (req, res) => res.render('register'));
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
     try {
-        if (users.find(u => u.username === username)) {
+        const [existing] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (existing.length > 0) {
             return res.status(400).json({ success: false, message: 'Usuário já existe!' });
         }
         const hash = await bcrypt.hash(password, 10);
-        users.push({ username, password: hash });
+        await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
         res.json({ success: true, message: 'Conta criada com sucesso! Você já pode fazer login.' });
     } catch (err) {
         console.error("Erro interno no cadastro:", err);
@@ -160,25 +95,120 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post('/add-item', (req, res) => {
-    const { name, category } = req.body;
-    if (!name) {
+app.post('/add-item', async (req, res) => {
+    const { name, category, price } = req.body;
+    
+    if (!name || name.trim() === '') {
         return res.status(400).send(`
             <body style="background:#0f1115;color:#ffffff;font-family:'Inter', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0;">
                 <h1 style="color:#ff6b6b;margin-bottom:8px;">Dados Inválidos</h1>
-                <p style="color:#8b92a5;margin-bottom:24px;">O nome do ingrediente é obrigatório.</p>
+                <p style="color:#8b92a5;margin-bottom:24px;">O nome da marmita/ingrediente não pode estar vazio.</p>
                 <a href="/dashboard" style="color:#fca311;text-decoration:none;font-weight:500;">&laquo; Voltar pro Dashboard</a>
             </body>
         `);
     }
-    items.push({ name, category });
-    res.redirect('/dashboard');
+
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+        return res.status(400).send(`
+            <body style="background:#0f1115;color:#ffffff;font-family:'Inter', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0;">
+                <h1 style="color:#ff6b6b;margin-bottom:8px;">Dados Inválidos</h1>
+                <p style="color:#8b92a5;margin-bottom:24px;">O preço deve ser um número positivo.</p>
+                <a href="/dashboard" style="color:#fca311;text-decoration:none;font-weight:500;">&laquo; Voltar pro Dashboard</a>
+            </body>
+        `);
+    }
+
+    try {
+        await pool.query('INSERT INTO items (name, category, price) VALUES (?, ?, ?)', [name, category, priceNum]);
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error("Erro ao adicionar:", err);
+        res.status(500).send("Erro ao adicionar ingrediente.");
+    }
 });
 
-app.get('/dashboard', (req, res) => {
-    res.render('dashboard', { items, orders });
+app.post('/orders', async (req, res) => {
+    const { customer_name, item_name } = req.body;
+    
+    if (!customer_name || customer_name.trim() === '' || !item_name) {
+        return res.status(400).send(`
+            <body style="background:#0f1115;color:#ffffff;font-family:'Inter', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0;">
+                <h1 style="color:#ff6b6b;margin-bottom:8px;">Dados Inválidos</h1>
+                <p style="color:#8b92a5;margin-bottom:24px;">Nome do cliente e seleção da marmita são obrigatórios.</p>
+                <a href="/dashboard" style="color:#fca311;text-decoration:none;font-weight:500;">&laquo; Voltar pro Dashboard</a>
+            </body>
+        `);
+    }
+
+    try {
+        const [items] = await pool.query('SELECT price FROM items WHERE name = ?', [item_name]);
+        const itemPrice = items.length > 0 ? items[0].price : 0;
+        
+        await pool.query('INSERT INTO orders (customer_name, item_name, price, status) VALUES (?, ?, ?, ?)', [customer_name, item_name, itemPrice, 'Aberto']);
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error("Erro ao registrar pedido:", err);
+        res.status(500).send("Erro ao registrar pedido.");
+    }
 });
 
-app.listen(3000, () => {
-    console.log('🚀 BYTEBISTRÔ PRO ONLINE NA PORTA 3000 (MODO IN-MEMORY)');
+app.post('/orders/advance/:id', async (req, res) => {
+    const orderId = req.params.id;
+    try {
+        const [rows] = await pool.query('SELECT status FROM orders WHERE id = ?', [orderId]);
+        if (rows.length === 0) return res.status(404).send("Pedido não encontrado.");
+        
+        let currentStatus = rows[0].status;
+        let nextStatus = currentStatus;
+        
+        if (currentStatus === 'Aberto') nextStatus = 'Cozinha';
+        else if (currentStatus === 'Cozinha') nextStatus = 'Entrega';
+        else if (currentStatus === 'Entrega') nextStatus = 'Entregue';
+        
+        if (nextStatus !== currentStatus) {
+            await pool.query('UPDATE orders SET status = ? WHERE id = ?', [nextStatus, orderId]);
+        }
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        res.status(500).send("Erro ao atualizar status.");
+    }
+});
+
+app.get('/admin/export', async (req, res) => {
+    try {
+        const [orders] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+        
+        let csvContent = 'ID;Cliente;Marmita;Status;Valor;Data\n';
+        orders.forEach(order => {
+            const dateStr = order.created_at ? order.created_at.toLocaleString('pt-BR') : '';
+            const priceStr = order.price ? parseFloat(order.price).toFixed(2).replace('.', ',') : '0,00';
+            csvContent += `${order.id};${order.customer_name};${order.item_name};${order.status};R$ ${priceStr};${dateStr}\n`;
+        });
+        
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="relatorio_vendas.csv"');
+        res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8')); // \uFEFF = BOM para o Excel ler acentos
+    } catch (err) {
+        console.error("Erro na exportação CSV:", err);
+        res.status(500).send("Erro ao gerar relatório.");
+    }
+});
+
+app.get('/dashboard', async (req, res) => {
+    try {
+        const [items] = await pool.query('SELECT * FROM items');
+        const [orders] = await pool.query('SELECT * FROM orders');
+        res.render('dashboard', { items, orders });
+    } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+        res.status(500).send("Erro ao carregar dashboard.");
+    }
+});
+
+connectWithRetry().then(() => {
+    app.listen(3000, () => {
+        console.log('🚀 BYTEBISTRÔ PRO ONLINE NA PORTA 3000 (MODO BANCO DE DADOS)');
+    });
 });

@@ -11,15 +11,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f1115;
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(255, 107, 107, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(252, 163, 17, 0.08), transparent 25%);
+            background: linear-gradient(rgba(15, 17, 21, 0.8), rgba(15, 17, 21, 0.9)), url('/bg-login.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         .login-container {
             background: rgba(255, 255, 255, 0.03);
@@ -31,14 +31,6 @@
             max-width: 420px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
-        }
-        .logo-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 24px;
-            border: 2px solid rgba(255, 107, 107, 0.3);
         }
         h2 {
             font-weight: 600;
@@ -84,7 +76,7 @@
             gap: 12px;
             margin-top: 32px;
         }
-        button {
+        button, .btn-link {
             width: 100%;
             padding: 14px;
             border-radius: 10px;
@@ -94,6 +86,8 @@
             cursor: pointer;
             transition: all 0.2s;
             border: none;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-primary {
             background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
@@ -117,9 +111,6 @@
 </head>
 <body>
     <div class="login-container">
-        <a href="/register">
-            <img class="logo-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxKYgQflQT45fSCqSXcciCJZ__d19JHIcdSQ&s" alt="ByteBistrô Logo">
-        </a>
         <h2>ByteBistrô</h2>
         <p class="subtitle">Faça login para acessar o painel</p>
         
@@ -135,42 +126,9 @@
             
             <div class="actions">
                 <button type="submit" class="btn-primary">Entrar no Sistema</button>
-                <button type="button" id="btnCadastrar" class="btn-secondary">Criar nova conta</button>
+                <a href="/register" class="btn-secondary btn-link">Criar nova conta</a>
             </div>
         </form>
     </div>
-
-    <script>
-        document.getElementById('btnCadastrar').addEventListener('click', async () => {
-            const usernameInput = document.querySelector('input[name="username"]');
-            const passwordInput = document.querySelector('input[name="password"]');
-            
-            if (!usernameInput.value || !passwordInput.value) {
-                alert('⚠️ Insira um Usuário e uma Senha antes de cadastrar!');
-                return;
-            }
-
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        username: usernameInput.value,
-                        password: passwordInput.value
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    alert('✅ ' + data.message);
-                } else {
-                    alert('❌ ' + data.message);
-                }
-            } catch (error) {
-                alert('❌ Erro de conexão ao tentar cadastrar.');
-            }
-        });
-    </script>
 </body>
 </html>
