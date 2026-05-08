@@ -1,235 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarmitaTech - Login : Underground Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Teko:wght@400;600&display=swap"
-        rel="stylesheet">
+    <title>ByteBistrô - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Teko', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background: #0f1115;
+            color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* Fundo asfalto escuro / noite da cidade */
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-            overflow: hidden;
-            position: relative;
-            color: #fff;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255, 107, 107, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(252, 163, 17, 0.08), transparent 25%);
         }
-
-        /* Ambient Neon Glow no fundo */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, transparent 60%);
-            transform: translate(-50%, -50%);
-            z-index: 0;
-        }
-
-        form {
-            z-index: 1;
-            /* Textura de fibra de carbono */
-            background:
-                linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
-                linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
-                linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
-                linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
-                linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
-                linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424 100%);
-            background-size: 20px 20px;
-            background-color: #131313;
-
-            /* Bordas de neon clássicas do NFS */
-            border: 2px solid #00ff88;
-            box-shadow: 0 0 20px #00ff88, inset 0 0 20px rgba(0, 255, 136, 0.3);
-
-            padding: 40px 40px 50px 50px;
-            border-radius: 12px;
+        .login-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 48px;
+            border-radius: 20px;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
-            position: relative;
         }
-
-        /* Tira de "velocidade" no formulário */
-        form::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 20px;
-            width: 8px;
-            height: 100%;
-            background: #00ff88;
-            box-shadow: 0 0 15px #00ff88;
-            transform: skewX(-15deg);
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 24px;
+            border: 2px solid rgba(255, 107, 107, 0.3);
         }
-
         h2 {
-            font-family: 'Racing Sans One', cursive;
-            color: #fff;
-            margin-bottom: 30px;
-            font-size: 42px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 4px 4px 0 #000;
-            transform: skewX(-10deg);
+            font-weight: 600;
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
-
+        p.subtitle {
+            color: #8b92a5;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
         .input-group {
-            position: relative;
             margin-bottom: 20px;
-            transform: skewX(-5deg);
+            text-align: left;
         }
-
-        input[type="text"],
-        input[type="password"] {
+        label {
+            display: block;
+            font-size: 13px;
+            color: #8b92a5;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input {
             width: 100%;
-            padding: 15px 15px 15px 20px;
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid #333;
-            border-bottom: 3px solid #00ff88;
-            color: #00ff88;
-            font-family: 'Teko', sans-serif;
-            font-size: 22px;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s;
             outline: none;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
         }
-
-        input::placeholder {
-            color: rgba(0, 255, 136, 0.5);
-            font-style: italic;
-            text-transform: uppercase;
-        }
-
         input:focus {
-            border-color: #00ff88;
-            background: rgba(0, 255, 136, 0.1);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4), inset 0 2px 5px rgba(0, 0, 0, 0.8);
-            transform: scale(1.02);
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.05);
         }
-
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 32px;
+        }
         button {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, #00ff88, #00b35f);
-            color: #000;
-            border: none;
-            font-family: 'Racing Sans One', cursive;
-            font-size: 24px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            padding: 14px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 15px;
-            transform: skewX(-5deg);
-            box-shadow: 0 0 15px #00ff88;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s;
+            border: none;
         }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-            transition: all 0.4s ease;
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
-
-        button:hover {
-            transform: skewX(-5deg) scale(1.05);
-            box-shadow: 0 0 25px #00ff88, 0 0 40px #00ff88;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
-
-        button:hover::before {
-            left: 100%;
-            transition: all 0.4s ease;
+        .btn-secondary {
+            background: transparent;
+            color: #8b92a5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        button:active {
-            transform: skewX(-5deg) scale(0.95);
-        }
-
-        button.btn-register {
-            background: linear-gradient(90deg, #ff0055, #b3003c);
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
             color: #fff;
-            box-shadow: 0 0 15px #ff0055;
-        }
-
-        button.btn-register:hover {
-            box-shadow: 0 0 25px #ff0055, 0 0 40px #ff0055;
-        }
-
-        img.avatar {
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 2px solid #333;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 1);
-            transform: skewX(-5deg);
-            width: 150px;
-        }
-
-        /* Decalques estilo NFS */
-        .decal {
-            position: absolute;
-            font-family: 'Racing Sans One', cursive;
-            color: rgba(255, 255, 255, 0.03);
-            font-size: 180px;
-            z-index: 0;
-            pointer-events: none;
-            transform: rotate(-15deg);
-            white-space: nowrap;
-        }
-
-        .decal-1 {
-            top: -40px;
-            left: -150px;
-        }
-
-        .decal-2 {
-            bottom: -60px;
-            right: -100px;
         }
     </style>
 </head>
-
 <body>
-    <div class="decal decal-1">NITROUS</div>
-    <div class="decal decal-2">UNDERGROUND</div>
-    <form action="/login" method="POST">
-        <a href="/register" title="Secret Area">
-            <img class="avatar"
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxKYgQflQT45fSCqSXcciCJZ__d19JHIcdSQ&s"
-                alt="Deu nao mo fi">
+    <div class="login-container">
+        <a href="/register">
+            <img class="logo-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxKYgQflQT45fSCqSXcciCJZ__d19JHIcdSQ&s" alt="ByteBistrô Logo">
         </a>
-        <h2> Rodnei Bar</h2>
-        <div class="input-group">
-            <input type="text" name="username" placeholder="Rider_Name" required>
-        </div>
-        <div class="input-group">
-            <input type="password" name="password" placeholder="Ignition_Key" required>
-        </div>
-        <button type="submit">Acelerar</button>
-        <button type="button" id="btnCadastrar" class="btn-register">Cadastrar</button>
-    </form>
+        <h2>ByteBistrô</h2>
+        <p class="subtitle">Faça login para acessar o painel</p>
+        
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label>Usuário</label>
+                <input type="text" name="username" placeholder="Digite seu usuário" required>
+            </div>
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" name="password" placeholder="Digite sua senha" required>
+            </div>
+            
+            <div class="actions">
+                <button type="submit" class="btn-primary">Entrar no Sistema</button>
+                <button type="button" id="btnCadastrar" class="btn-secondary">Criar nova conta</button>
+            </div>
+        </form>
+    </div>
 
     <script>
         document.getElementById('btnCadastrar').addEventListener('click', async () => {
@@ -237,7 +146,7 @@
             const passwordInput = document.querySelector('input[name="password"]');
             
             if (!usernameInput.value || !passwordInput.value) {
-                alert('⚠️ Insira um Rider_Name e uma Ignition_Key antes de cadastrar!');
+                alert('⚠️ Insira um Usuário e uma Senha antes de cadastrar!');
                 return;
             }
 
@@ -259,10 +168,9 @@
                     alert('❌ ' + data.message);
                 }
             } catch (error) {
-                alert('❌ Erro de conexão ao tentar cadastrar o piloto.');
+                alert('❌ Erro de conexão ao tentar cadastrar.');
             }
         });
     </script>
 </body>
-
 </html>
