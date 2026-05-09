@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS items (
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_name VARCHAR(100),
-    item_name VARCHAR(100),
+    item_name TEXT,
     price DECIMAL(10,2),
     status VARCHAR(20) DEFAULT 'Aberto',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

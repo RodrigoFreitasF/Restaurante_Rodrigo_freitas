@@ -6,6 +6,9 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 
+// Segurança: Ocultar o fingerprint do Express (Sonar Hotspot)
+app.disable('x-powered-by');
+
 // Middlewares
 app.get('/bg-login.jpg', (req, res) => res.sendFile(path.join(__dirname, 'foto_restaurante.png')));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -17,7 +20,7 @@ const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3307,
     user: process.env.DB_USER || 'user',
-    password: process.env.DB_PASS || 'password',
+    password: process.env.DB_PASS || '', // Removido hardcoded password p/ SonarQube
     database: process.env.DB_NAME || 'marmitadb'
 };
 
@@ -129,9 +132,10 @@ app.post('/add-item', async (req, res) => {
 });
 
 app.post('/orders', async (req, res) => {
-    const { customer_name, item_name } = req.body;
+    const { customer_name } = req.body;
+    let item_names = req.body.item_name;
     
-    if (!customer_name || customer_name.trim() === '' || !item_name) {
+    if (!customer_name || customer_name.trim() === '' || !item_names) {
         return res.status(400).send(`
             <body style="background:#0f1115;color:#ffffff;font-family:'Inter', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0;">
                 <h1 style="color:#ff6b6b;margin-bottom:8px;">Dados Inválidos</h1>
@@ -141,11 +145,20 @@ app.post('/orders', async (req, res) => {
         `);
     }
 
+    if (!Array.isArray(item_names)) {
+        item_names = [item_names];
+    }
+
     try {
-        const [items] = await pool.query('SELECT price FROM items WHERE name = ?', [item_name]);
-        const itemPrice = items.length > 0 ? items[0].price : 0;
+        const placeholders = item_names.map(() => '?').join(',');
+        const [items] = await pool.query(`SELECT price FROM items WHERE name IN (${placeholders})`, item_names);
         
-        await pool.query('INSERT INTO orders (customer_name, item_name, price, status) VALUES (?, ?, ?, ?)', [customer_name, item_name, itemPrice, 'Aberto']);
+        let totalPrice = 0;
+        items.forEach(i => totalPrice += parseFloat(i.price || 0));
+        
+        const itemsJoined = item_names.join(' + ');
+        
+        await pool.query('INSERT INTO orders (customer_name, item_name, price, status) VALUES (?, ?, ?, ?)', [customer_name, itemsJoined, totalPrice, 'Aberto']);
         res.redirect('/dashboard');
     } catch (err) {
         console.error("Erro ao registrar pedido:", err);
