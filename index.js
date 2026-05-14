@@ -34,6 +34,16 @@ async function connectWithRetry() {
             await pool.query('SELECT 1');
             console.log('✅ [DATABASE] Conectado ao MySQL com sucesso!');
             
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS transactions (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    type VARCHAR(10) NOT NULL,
+                    description VARCHAR(255) NOT NULL,
+                    amount DECIMAL(10,2) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            
             const [adminRows] = await pool.query('SELECT * FROM users WHERE username = ?', ['admin']);
             if (adminRows.length === 0) {
                 const adminHash = await bcrypt.hash('admin123', 10);
@@ -159,6 +169,11 @@ app.post('/orders', async (req, res) => {
         const itemsJoined = item_names.join(' + ');
         
         await pool.query('INSERT INTO orders (customer_name, item_name, price, status) VALUES (?, ?, ?, ?)', [customer_name, itemsJoined, totalPrice, 'Aberto']);
+        
+        // Registrar transação financeira de entrada automaticamente
+        const desc = `Venda: ${customer_name} (${itemsJoined})`;
+        await pool.query('INSERT INTO transactions (type, description, amount) VALUES (?, ?, ?)', ['entrada', desc.substring(0, 255), totalPrice]);
+        
         res.redirect('/dashboard');
     } catch (err) {
         console.error("Erro ao registrar pedido:", err);
@@ -182,7 +197,7 @@ app.post('/orders/advance/:id', async (req, res) => {
         if (nextStatus !== currentStatus) {
             await pool.query('UPDATE orders SET status = ? WHERE id = ?', [nextStatus, orderId]);
         }
-        res.redirect('/dashboard');
+        res.redirect('/kanban');
     } catch (err) {
         console.error("Erro ao atualizar status:", err);
         res.status(500).send("Erro ao atualizar status.");
@@ -213,10 +228,52 @@ app.get('/dashboard', async (req, res) => {
     try {
         const [items] = await pool.query('SELECT * FROM items');
         const [orders] = await pool.query('SELECT * FROM orders');
-        res.render('dashboard', { items, orders });
+        
+        const [transactions] = await pool.query('SELECT * FROM transactions ORDER BY created_at DESC');
+        let totalEntradas = 0;
+        let totalSaidas = 0;
+        transactions.forEach(t => {
+            const val = parseFloat(t.amount);
+            if (t.type === 'entrada') totalEntradas += val;
+            else if (t.type === 'saida') totalSaidas += val;
+        });
+        const saldo = totalEntradas - totalSaidas;
+        
+        res.render('dashboard', { items, orders, transactions, totalEntradas, totalSaidas, saldo });
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
         res.status(500).send("Erro ao carregar dashboard.");
+    }
+});
+
+app.get('/kanban', async (req, res) => {
+    try {
+        const [orders] = await pool.query('SELECT * FROM orders');
+        res.render('kanban', { orders });
+    } catch (err) {
+        console.error("Erro ao carregar kanban:", err);
+        res.status(500).send("Erro ao carregar kanban.");
+    }
+});
+
+app.post('/financeiro/add', async (req, res) => {
+    const { type, description, amount } = req.body;
+    
+    if (!description || !amount || (type !== 'entrada' && type !== 'saida')) {
+        return res.status(400).send("Dados inválidos para transação.");
+    }
+    
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+        return res.status(400).send("O valor deve ser positivo.");
+    }
+    
+    try {
+        await pool.query('INSERT INTO transactions (type, description, amount) VALUES (?, ?, ?)', [type, description, numAmount]);
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error("Erro ao adicionar transação:", err);
+        res.status(500).send("Erro ao adicionar transação.");
     }
 });
 
