@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="10">
+    <title>ByteBistrô - Cozinha (Kanban)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1115;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 107, 107, 0.05), transparent 50%);
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-dot {
+            width: 12px;
+            height: 12px;
+            background: #fca311;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(252, 163, 17, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(252, 163, 17, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(252, 163, 17, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(252, 163, 17, 0); }
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8b92a5;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        main {
+            padding: 24px 32px;
+            flex: 1;
+            width: 100%; /* 100% screen */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kanban-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            flex: 1; /* Ocupar restante da altura */
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .kanban-column h3 {
+            text-align: center;
+            font-size: 18px;
+            color: #fff;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 4px;
+        }
+
+        .cards-container::-webkit-scrollbar { width: 6px; }
+        .cards-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        .cards-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .kanban-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .kanban-card h4 {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .kanban-card p {
+            color: #8b92a5;
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .btn-advance {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fca311;
+            border: 1px solid rgba(252, 163, 17, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-advance:hover {
+            background: rgba(252, 163, 17, 0.1);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><div class="logo-dot"></div> Painel da Cozinha - Ao Vivo</h1>
+        <div style="display:flex; gap:16px; align-items:center;">
+            <a href="/dashboard" class="back-btn">← Voltar pro Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="kanban-section">
+            <div class="kanban-board">
+                <!-- Coluna: Aberto -->
+                <div class="kanban-column">
+                    <h3>Aberto</h3>
+                    <div class="cards-container">
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Aberto').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #ff6b6b;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Avançar para Cozinha →</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    </div>
+                </div>
+
+                <!-- Coluna: Cozinha -->
+                <div class="kanban-column">
+                    <h3>Cozinha</h3>
+                    <div class="cards-container">
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Cozinha').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #fca311;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Avançar para Entrega →</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    </div>
+                </div>
+
+                <!-- Coluna: Entrega -->
+                <div class="kanban-column">
+                    <h3>Entrega</h3>
+                    <div class="cards-container">
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Entrega').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #4facfe;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                                <form action="/orders/advance/<%= order.id %>" method="POST">
+                                    <button type="submit" class="btn-advance">Marcar como Entregue ✓</button>
+                                </form>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    </div>
+                </div>
+
+                <!-- Coluna: Entregue -->
+                <div class="kanban-column" style="opacity: 0.7;">
+                    <h3>Entregue</h3>
+                    <div class="cards-container">
+                    <% if (orders) { %>
+                        <% orders.filter(o => o.status === 'Entregue').forEach(order => { %>
+                            <div class="kanban-card" style="border-top: 4px solid #00f2fe;">
+                                <h4><%= order.customer_name %></h4>
+                                <p><%= order.item_name %></p>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

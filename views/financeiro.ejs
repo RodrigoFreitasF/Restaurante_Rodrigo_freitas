@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteBistrô - Financeiro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1115;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(79, 172, 254, 0.05), transparent 50%);
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-dot {
+            width: 12px;
+            height: 12px;
+            background: #4facfe;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8b92a5;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        main {
+            padding: 48px;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .summary-title {
+            color: #8b92a5;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .text-green { color: #00f2fe; }
+        .text-red { color: #ff6b6b; }
+        .text-blue { color: #4facfe; }
+
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        /* Form */
+        form {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #8b92a5;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b92a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        select option {
+            background: #0f1115;
+            color: #fff;
+        }
+
+        input:focus, select:focus {
+            border-color: #4facfe;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #0f1115;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 50px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            color: #8b92a5;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td {
+            padding: 16px;
+            font-size: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: #fff;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .type-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-in {
+            background: rgba(0, 242, 254, 0.1);
+            color: #00f2fe;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .badge-out {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #646b7a;
+            padding: 48px 0;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><div class="logo-dot"></div> Fluxo de Caixa</h1>
+        <div style="display:flex; gap:16px; align-items:center;">
+            <a href="/dashboard" class="logout-btn">Voltar pro Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="summary-grid">
+            <div class="summary-card" style="border-top: 4px solid #00f2fe;">
+                <span class="summary-title">Total Entradas</span>
+                <span class="summary-value text-green">R$ <%= parseFloat(totalEntradas).toFixed(2).replace('.', ',') %></span>
+            </div>
+            <div class="summary-card" style="border-top: 4px solid #ff6b6b;">
+                <span class="summary-title">Total Saídas</span>
+                <span class="summary-value text-red">R$ <%= parseFloat(totalSaidas).toFixed(2).replace('.', ',') %></span>
+            </div>
+            <div class="summary-card" style="border-top: 4px solid <%= saldo >= 0 ? '#4facfe' : '#ff6b6b' %>;">
+                <span class="summary-title">Saldo Atual</span>
+                <span class="summary-value <%= saldo >= 0 ? 'text-blue' : 'text-red' %>">R$ <%= parseFloat(saldo).toFixed(2).replace('.', ',') %></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Novo Lançamento Manual</h3>
+            <form action="/financeiro/add" method="POST">
+                <div class="form-group">
+                    <label>Tipo de Lançamento</label>
+                    <select name="type" required>
+                        <option value="entrada">Entrada (Receita)</option>
+                        <option value="saida">Saída (Despesa)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>Descrição</label>
+                    <input type="text" name="description" placeholder="Ex: Pagamento de Fornecedor" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" step="0.01" min="0.01" name="amount" placeholder="Ex: 150.00" required>
+                </div>
+                <button type="submit">Lançar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Histórico de Transações</h3>
+            <% if (transactions && transactions.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th style="text-align: right;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% transactions.forEach(t => { %>
+                            <tr>
+                                <td><%= t.created_at ? t.created_at.toLocaleString('pt-BR') : '-' %></td>
+                                <td>
+                                    <% if (t.type === 'entrada') { %>
+                                        <span class="type-badge badge-in">Entrada</span>
+                                    <% } else { %>
+                                        <span class="type-badge badge-out">Saída</span>
+                                    <% } %>
+                                </td>
+                                <td><%= t.description %></td>
+                                <td style="text-align: right; font-weight: 600; color: <%= t.type === 'entrada' ? '#00f2fe' : '#ff6b6b' %>">
+                                    <%= t.type === 'entrada' ? '+' : '-' %> R$ <%= parseFloat(t.amount).toFixed(2).replace('.', ',') %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <div class="empty-state">
+                    Nenhuma transação registrada ainda no fluxo de caixa.
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

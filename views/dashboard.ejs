@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteBistrô - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1115;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 107, 107, 0.05), transparent 50%);
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8b92a5;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.2);
+        }
+
+        main {
+            padding: 48px;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forms */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #646b7a;
+        }
+
+        input:focus {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.03);
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Lista de itens */
+        ul {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        ul::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ul::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ul::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        li {
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 12px;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        li:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .category-badge {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #b4bccf;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #646b7a;
+            padding: 32px 0;
+            font-size: 15px;
+        }
+
+        .kanban-section {
+            margin-top: 48px;
+        }
+
+        .kanban-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .coming-soon {
+            background: rgba(252, 163, 17, 0.05);
+            border: 1px dashed rgba(252, 163, 17, 0.3);
+            color: #fca311;
+            padding: 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 250px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .kanban-column h3 {
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0;
+        }
+
+        .kanban-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-card h4 {
+            font-size: 15px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .kanban-card p {
+            color: #8b92a5;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .btn-advance {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fca311;
+            border: 1px solid rgba(252, 163, 17, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-advance:hover {
+            background: rgba(252, 163, 17, 0.1);
+            color: #fff;
+        }
+
+        /* Checkbox Customizados */
+        .ingredient-list {
+            background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 10px; 
+            padding: 12px; 
+            max-height: 180px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px;
+            padding-right: 6px;
+        }
+
+        .ingredient-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ingredient-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        .ingredient-list::-webkit-scrollbar-thumb {
+            background: rgba(252, 163, 17, 0.3);
+            border-radius: 4px;
+        }
+
+        .ingredient-checkbox {
+            cursor: pointer;
+            display: block;
+        }
+
+        .ingredient-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .ingredient-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .ingredient-name {
+            color: #8b92a5;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .ingredient-price {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .ingredient-checkbox:hover .ingredient-content {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .ingredient-checkbox input[type="checkbox"]:checked + .ingredient-content {
+            background: rgba(252, 163, 17, 0.1);
+            border-color: rgba(252, 163, 17, 0.5);
+        }
+
+        .ingredient-checkbox input[type="checkbox"]:checked + .ingredient-content .ingredient-name {
+            color: #fca311;
+        }
+        .ingredient-checkbox input[type="checkbox"]:checked + .ingredient-content .ingredient-price {
+            color: #fca311;
+        }
+
+        /* Summary Cards */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; margin-top: 48px;}
+        .summary-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; }
+        .summary-title { color: #8b92a5; font-size: 15px; font-weight: 500; }
+        .summary-value { font-size: 32px; font-weight: 700; }
+        .text-green { color: #00f2fe; }
+        .text-red { color: #ff6b6b; }
+        .text-blue { color: #4facfe; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 16px; color: #8b92a5; font-weight: 500; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        td { padding: 16px; font-size: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: #fff; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+        .type-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-in { background: rgba(0, 242, 254, 0.1); color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.2); }
+        .badge-out { background: rgba(255, 107, 107, 0.1); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.2); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><div class="logo-dot"></div> ByteBistrô</h1>
+        <div style="display:flex; gap:16px; align-items:center;">
+            <a href="/kanban" target="_blank" class="logout-btn" style="color: #fca311; border-color: rgba(252, 163, 17, 0.3);">Painel Kanban ↗</a>
+            <a href="/admin/export" style="background:#fca311; color:#0f1115; font-weight:600;" class="logout-btn">Baixar Relatório CSV</a>
+            <a href="/" class="logout-btn">Sair da conta</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="grid">
+            <div class="card">
+                <h3>Adicionar Ingrediente / Marmita</h3>
+                <form action="/add-item" method="POST">
+                    <input type="text" name="name" placeholder="Nome (Ex: Batata Doce)" required>
+                    <input type="text" name="category" placeholder="Categoria (Ex: Carboidrato)">
+                    <input type="number" step="0.01" min="0.01" name="price" placeholder="Preço (Ex: 15.50)" required>
+                    <button type="submit">Cadastrar Item</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Itens Disponíveis</h3>
+                <ul>
+                    <% if (items && items.length > 0) { %>
+                        <% items.forEach(item => { %>
+                            <li>
+                                <span><%= item.name %></span>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <% if (item.price) { %>
+                                        <span style="color:#fca311; font-weight:600;">R$ <%= parseFloat(item.price).toFixed(2) %></span>
+                                    <% } %>
+                                    <span class="category-badge"><%= item.category || 'Geral' %></span>
+                                </div>
+                            </li>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            Nenhum ingrediente cadastrado ainda.
+                        </div>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+
+        <div class="kanban-section">
+            <h2>Registrar Nova Venda</h2>
+            <div class="card" style="margin-bottom: 32px;">
+                <form action="/orders" method="POST" style="flex-direction: row; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Nome do Cliente</label>
+                        <input type="text" name="customer_name" placeholder="Ex: João Silva" required>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Ingredientes Selecionados</label>
+                        <div class="ingredient-list">
+                            <% if (items && items.length > 0) { %>
+                                <% items.forEach(item => { %>
+                                    <label class="ingredient-checkbox">
+                                        <input type="checkbox" name="item_name" value="<%= item.name %>">
+                                        <div class="ingredient-content">
+                                            <span class="ingredient-name"><%= item.name %></span>
+                                            <span class="ingredient-price">R$ <%= parseFloat(item.price || 0).toFixed(2).replace('.', ',') %></span>
+                                        </div>
+                                    </label>
+                                <% }) %>
+                            <% } else { %>
+                                <span style="color:#8b92a5; font-size:13px; text-align:center; padding: 10px;">Nenhum ingrediente disponível</span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <button type="submit" style="margin-top:0; height:47px;">Registrar Pedido</button>
+                </form>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card" style="border-top: 4px solid #00f2fe;">
+                    <span class="summary-title">Total Entradas</span>
+                    <span class="summary-value text-green">R$ <%= parseFloat(totalEntradas).toFixed(2).replace('.', ',') %></span>
+                </div>
+                <div class="summary-card" style="border-top: 4px solid #ff6b6b;">
+                    <span class="summary-title">Total Saídas</span>
+                    <span class="summary-value text-red">R$ <%= parseFloat(totalSaidas).toFixed(2).replace('.', ',') %></span>
+                </div>
+                <div class="summary-card" style="border-top: 4px solid <%= saldo >= 0 ? '#4facfe' : '#ff6b6b' %>;">
+                    <span class="summary-title">Saldo Atual</span>
+                    <span class="summary-value <%= saldo >= 0 ? 'text-blue' : 'text-red' %>">R$ <%= parseFloat(saldo).toFixed(2).replace('.', ',') %></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Novo Lançamento Financeiro</h3>
+                <form action="/financeiro/add" method="POST" style="flex-direction: row; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Tipo de Lançamento</label>
+                        <select name="type" required style="width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-family: 'Inter', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s;">
+                            <option value="entrada" style="background: #0f1115; color: #fff;">Entrada (Receita)</option>
+                            <option value="saida" style="background: #0f1115; color: #fff;">Saída (Despesa)</option>
+                        </select>
+                    </div>
+                    <div style="flex: 2; min-width: 200px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Descrição</label>
+                        <input type="text" name="description" placeholder="Ex: Pagamento de Fornecedor" required>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; margin-bottom:8px; font-size:13px; color:#8b92a5;">Valor (R$)</label>
+                        <input type="number" step="0.01" min="0.01" name="amount" placeholder="Ex: 150.00" required>
+                    </div>
+                    <button type="submit" style="margin-top:0; height:47px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: #0f1115;">Lançar</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-bottom: 0;">
+                <h3>Histórico de Transações</h3>
+                <% if (transactions && transactions.length > 0) { %>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th style="text-align: right;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% transactions.forEach(t => { %>
+                                <tr>
+                                    <td><%= t.created_at ? t.created_at.toLocaleString('pt-BR') : '-' %></td>
+                                    <td>
+                                        <% if (t.type === 'entrada') { %>
+                                            <span class="type-badge badge-in">Entrada</span>
+                                        <% } else { %>
+                                            <span class="type-badge badge-out">Saída</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= t.description %></td>
+                                    <td style="text-align: right; font-weight: 600; color: <%= t.type === 'entrada' ? '#00f2fe' : '#ff6b6b' %>">
+                                        <%= t.type === 'entrada' ? '+' : '-' %> R$ <%= parseFloat(t.amount).toFixed(2).replace('.', ',') %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="empty-state">
+                        Nenhuma transação registrada ainda no fluxo de caixa.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
