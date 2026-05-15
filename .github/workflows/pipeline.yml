@@ -107,8 +107,7 @@ jobs:
         run: cat sonar-project.properties
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        continue-on-error: true
+        uses: sonarsource/sonarqube-scan-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.TOKENSONAR}}
           SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
@@ -160,8 +159,7 @@ jobs:
           vuln-type: 'os,library'
 
       - name: SonarQube lendo o Trivy (External Issues)
-        uses: sonarsource/sonarqube-scan-action@master
-        continue-on-error: true
+        uses: sonarsource/sonarqube-scan-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.TOKENSONAR }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
