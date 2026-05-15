@@ -162,7 +162,7 @@ jobs:
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.TOKENSONAR }}
-          SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.event.repository.name }}
