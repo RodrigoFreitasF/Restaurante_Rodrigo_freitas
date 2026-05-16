@@ -153,8 +153,8 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ secrets.DOCKER_USERNAME }}/nome-do-seu-app:latest'
-          format: 'json'
-          output: 'trivy-report.json'
+          format: 'sarif'
+          output: 'trivy-report.sarif'
           ignore-unfixed: true
           vuln-type: 'os,library'
 
@@ -166,5 +166,5 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ github.event.repository.name }}
-            -Dsonar.externalIssuesReportPaths=trivy-report.json
+            -Dsonar.sarifReportPaths=trivy-report.sarif
 
