@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS rodrigoFreiDb;
+
+USE rodrigoFreiDb;
+
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -7,40 +11,45 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    category VARCHAR(50),
-    price DECIMAL(10,2)
+    price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    category VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    customer_name VARCHAR(100),
-    item_name TEXT,
-    price DECIMAL(10,2),
+    customer_name VARCHAR(100) NOT NULL,
+    item_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     status VARCHAR(20) DEFAULT 'Aberto',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES items (id)
 );
 
+-- SENHA: admin123 (hasheada com HMAC-SHA256 + salt, formato: salt:hash)
+INSERT INTO
+    users (username, password)
+VALUES (
+        'admin',
+        'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4:18790963ae27d0273292ddda92ed337ae2492c920badc3a854c32eaefabcaf92'
+    );
 
 INSERT INTO
-    items (name, category, price)
-VALUES 
-    ('Arroz Branco', 'Base', 12.50),
-    ('Feijão Preto', 'Grão', 10.00),
-    ('Frango Grelhado', 'Proteína', 18.90),
-    ('Salada Mista', 'Vegetal', 15.00);
-
-INSERT INTO
-    orders (customer_name, item_name, price, status)
-VALUES
-    ('João Silva', 'Arroz Branco', 12.50, 'Aberto'),
-    ('Maria Oliveira', 'Frango Grelhado', 18.90, 'Aberto'),
-    ('Carlos Santos', 'Feijão Preto', 10.00, 'Aberto'),
-    ('Ana Costa', 'Salada Mista', 15.00, 'Aberto');
-
-CREATE TABLE IF NOT EXISTS transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(10) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    items (name, price, category)
+VALUES ('Arroz Branco', 5.00, 'Base'),
+    ('Feijão Preto', 7.50, 'Grão'),
+    (
+        'Frango Grelhado',
+        18.90,
+        'Proteína'
+    ),
+    (
+        'Bife Acebolado',
+        22.50,
+        'Proteína'
+    ),
+    (
+        'Salada Mista',
+        9.00,
+        'Acompanhamento'
+    );
