@@ -110,6 +110,118 @@ jobs:
         uses: sonarsource/sonarqube-scan-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.TOKENSONAR}}
+name: integracao continua
+
+on:
+  push:
+    branches: ["develop", "staging"]
+  pull_request:
+    branches: ["develop", "staging"]
+
+jobs:
+  estagio_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          package-manager-cache: false
+
+      - name: Gerar lockfile temporário
+        run: npm install --package-lock-only
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Verificar sintaxe de todos os arquivos JS
+        run: |
+          find . -type f -name "*.js" \
+            ! -path "./node_modules/*" \
+            ! -path "./.git/*" \
+            ! -path "./dist/*" \
+            -exec node --check {} \;
+
+  estagio_lint:
+    runs-on: ubuntu-latest
+    needs: estagio_build
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          package-manager-cache: false
+
+      - name: Gerar lockfile temporário
+        run: npm install --package-lock-only
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Instalar dependências temporárias do lint
+        run: npm install --no-save eslint globals
+
+      - name: Criar configuração temporária do ESLint
+        run: |
+          cat > eslint.config.js <<'EOF'
+          const globals = require("globals");
+
+          module.exports = [
+            {
+              files: ["**/*.js"],
+              ignores: ["node_modules/**", ".git/**", "dist/**"],
+              languageOptions: {
+                ecmaVersion: 2021,
+                sourceType: "commonjs",
+                globals: {
+                  ...globals.node,
+                  ...globals.commonjs
+                }
+              },
+              rules: {
+                "no-unused-vars": "warn",
+                "no-undef": "error"
+              }
+            }
+          ];
+          EOF
+
+      - name: Rodar lint
+        run: npx eslint .
+
+  job_sonar:
+    needs: estagio_lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Essencial para o Sonar ler o histórico de branches
+
+      - name: Criar sonar-project.properties dinâmico
+        run: |
+          # Define o nome do repo e a branch dinamicamente
+          echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
+          echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
+          echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
+          echo "sonar.sources=." >> sonar-project.properties
+          echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
+          echo "sonar.exclusions=node_modules/**,.git/**,.github/**,coverage/**,dist/**" >> sonar-project.properties
+
+      - name: Exibir configuração do Sonar
+        run: cat sonar-project.properties
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.TOKENSONAR}}
           SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
         with:
           # Reforça a branch nos argumentos da execução
@@ -118,7 +230,7 @@ jobs:
 
   job_release_docker:
     needs: estagio_lint
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -136,12 +248,12 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:${{ github.ref_name }}
           # Troque "nome-do-seu-app" para o nome do seu repositório no Docker Hub
 
   job_trivy_sonar:
     needs: job_release_docker
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código para o Sonar
@@ -152,7 +264,7 @@ jobs:
       - name: Scan de Segurança com Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ secrets.DOCKER_USERNAME }}/nome-do-seu-app:latest'
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:${{ github.ref_name }}'
           format: 'sarif'
           output: 'trivy-report.sarif'
           ignore-unfixed: true
@@ -168,3 +280,61 @@ jobs:
             -Dsonar.projectKey=${{ github.event.repository.name }}
             -Dsonar.sarifReportPaths=trivy-report.sarif
 
+  job_deploy:
+    needs: job_trivy_sonar
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Preparar arquivo Compose com o identificador
+        run: |
+          export PORT=3000
+          if [ "${{ github.ref_name }}" == "staging" ]; then
+            export PORT=9010
+          fi
+          
+          # Copia o compose original para o formato fixo baseado na branch
+          cp docker-compose.yml docker-compose-rodrigo-${{ github.ref_name }}.yml
+          
+          # Substitui a instrução de build pela imagem construída
+          sed -i "s|build: .|image: \${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:\${{ github.ref_name }}|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+          
+          # Renomeia os containers para evitar conflito caso ambos rodem na mesma máquina
+          sed -i "s|container_name: restaurante-rodrigo|container_name: restaurante-rodrigo-${{ github.ref_name }}|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+          
+          # Modifica a porta exposta da aplicação (9010:3000 -> $PORT:3000)
+          sed -i "s|9010:3000|$PORT:3000|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+
+      - name: Copiar Compose para a EC2 (via SCP)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "docker-compose-rodrigo-${{ github.ref_name }}.yml,init.sql"
+          target: "/home/${{ secrets.EC2_USER }}/deploy_rodrigo_${{ github.ref_name }}/"
+
+      - name: Executar o Deploy na EC2 (via SSH)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            # Entra na pasta onde o arquivo foi copiado
+            cd /home/${{ secrets.EC2_USER }}/deploy_rodrigo_${{ github.ref_name }}
+
+            # Executa o init.sql no container MySQL antes de subir a aplicação
+            echo "⏳ Executando init.sql no container mysql-infra..."
+            sudo docker exec -i mysql-infra \
+              mysql -u root -ppassword < init.sql
+
+            echo "✅ init.sql executado com sucesso!"
+
+            # Força o pull da nova imagem e sobe os containers
+            sudo docker compose -f docker-compose-rodrigo-${{ github.ref_name }}.yml pull
+            sudo docker compose -f docker-compose-rodrigo-${{ github.ref_name }}.yml up -d
+
+            echo "✅ Deploy do Rodrigo (${{ github.ref_name }}) finalizado com sucesso!"
