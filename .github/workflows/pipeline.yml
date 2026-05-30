@@ -119,7 +119,7 @@ jobs:
 
   job_release_docker:
     needs: estagio_lint
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -142,7 +142,7 @@ jobs:
 
   job_trivy_sonar:
     needs: job_release_docker
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código para o Sonar
@@ -171,7 +171,7 @@ jobs:
 
   job_deploy:
     needs: job_trivy_sonar
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -179,22 +179,19 @@ jobs:
 
       - name: Preparar arquivo Compose com o identificador
         run: |
-          export PORT=3000
-          if [ "${{ github.ref_name }}" == "staging" ]; then
-            export PORT=9010
-          fi
+          export PORT=9010
           
-          # Copia o compose original para o formato fixo baseado na branch
-          cp docker-compose.yml docker-compose-rodrigo-${{ github.ref_name }}.yml
+          # Copia o compose original para o formato fixo
+          cp docker-compose.yml docker-compose-rodrigo-staging.yml
           
           # Substitui a instrução de build pela imagem construída
-          sed -i "s|build: .|image: \${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:\${{ github.ref_name }}|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+          sed -i "s|build: .|image: \${{ secrets.DOCKER_USERNAME }}/restaurante_rodrigo_freitas:staging|g" docker-compose-rodrigo-staging.yml
           
           # Renomeia os containers para evitar conflito caso ambos rodem na mesma máquina
-          sed -i "s|container_name: restaurante-rodrigo|container_name: restaurante-rodrigo-${{ github.ref_name }}|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+          sed -i "s|container_name: restaurante-rodrigo|container_name: restaurante-rodrigo-staging|g" docker-compose-rodrigo-staging.yml
           
-          # Modifica a porta exposta da aplicação (9010:3000 -> $PORT:3000)
-          sed -i "s|9010:3000|$PORT:3000|g" docker-compose-rodrigo-${{ github.ref_name }}.yml
+          # Modifica a porta exposta da aplicação
+          sed -i "s|9010:3000|$PORT:3000|g" docker-compose-rodrigo-staging.yml
 
       - name: Copiar Compose para a EC2 (via SCP)
         uses: appleboy/scp-action@v0.1.7
@@ -202,8 +199,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "docker-compose-rodrigo-${{ github.ref_name }}.yml,init.sql"
-          target: "/home/${{ secrets.EC2_USER }}/deploy_rodrigo_${{ github.ref_name }}/"
+          source: "docker-compose-rodrigo-staging.yml,init.sql"
+          target: "/home/${{ secrets.EC2_USER }}/deploy_rodrigo_staging/"
 
       - name: Executar o Deploy na EC2 (via SSH)
         uses: appleboy/ssh-action@v1.0.3
@@ -213,7 +210,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             # Entra na pasta onde o arquivo foi copiado
-            cd /home/${{ secrets.EC2_USER }}/deploy_rodrigo_${{ github.ref_name }}
+            cd /home/${{ secrets.EC2_USER }}/deploy_rodrigo_staging
 
             # Executa o init.sql no container MySQL antes de subir a aplicação
             echo "⏳ Executando init.sql no container mysql-infra..."
@@ -223,7 +220,7 @@ jobs:
             echo "✅ init.sql executado com sucesso!"
 
             # Força o pull da nova imagem e sobe os containers
-            sudo docker compose -f docker-compose-rodrigo-${{ github.ref_name }}.yml pull
-            sudo docker compose -f docker-compose-rodrigo-${{ github.ref_name }}.yml up -d
+            sudo docker compose -f docker-compose-rodrigo-staging.yml pull
+            sudo docker compose -f docker-compose-rodrigo-staging.yml up -d
 
-            echo "✅ Deploy do Rodrigo (${{ github.ref_name }}) finalizado com sucesso!"
+            echo "✅ Deploy do Rodrigo (staging) finalizado com sucesso!"
