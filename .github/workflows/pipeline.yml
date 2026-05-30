@@ -117,8 +117,35 @@ jobs:
           args: >
             -Dsonar.branch.name=${{ github.ref_name }}
 
+  job_merge_staging:
+    needs: job_sonar
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # O GITHUB_TOKEN padrão não dispara novos workflows por segurança. 
+          # Se o deploy da staging não iniciar, será necessário criar um PAT (Personal Access Token).
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Git e fazer Merge para Staging
+        run: |
+          git config --global user.name "GitHub Actions Automator"
+          git config --global user.email "actions@github.com"
+          
+          # Garante que a branch staging exista localmente e esteja atualizada
+          git checkout -B staging origin/staging || git checkout -b staging
+          
+          # Traz as atualizações da develop e mescla
+          git merge origin/develop --no-edit
+          
+          # Envia a nova staging para o repositório
+          git push origin staging
+
   job_release_docker:
-    needs: estagio_lint
+    needs: [estagio_lint, job_sonar]
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
