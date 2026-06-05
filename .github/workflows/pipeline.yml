@@ -124,8 +124,8 @@ jobs:
       - name: Criar sonar-project.properties dinâmico
         run: |
           # Define o nome do repo e a branch dinamicamente
-          echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
-          echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
+          echo "sonar.projectKey=Restaurante_Rodrigo_freitas" > sonar-project.properties
+          echo "sonar.projectName=Restaurante_Rodrigo_freitas" >> sonar-project.properties
           echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
           echo "sonar.sources=." >> sonar-project.properties
           echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
@@ -225,8 +225,8 @@ jobs:
 
       - name: Criar sonar-project.properties dinâmico
         run: |
-          echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
-          echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
+          echo "sonar.projectKey=Restaurante_Rodrigo_freitas" > sonar-project.properties
+          echo "sonar.projectName=Restaurante_Rodrigo_freitas" >> sonar-project.properties
           echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
           echo "sonar.sources=." >> sonar-project.properties
           echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
