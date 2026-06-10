@@ -44,6 +44,27 @@ async function connectWithRetry() {
                 )
             `);
             
+            try {
+                const [columns] = await pool.query("SHOW COLUMNS FROM orders LIKE 'item_name'");
+                if (columns.length === 0) {
+                    console.log('⚠️ [DATABASE] Atualizando esquema da tabela orders...');
+                    await pool.query('RENAME TABLE orders TO orders_old_' + Date.now());
+                    await pool.query(`
+                        CREATE TABLE orders (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            customer_name VARCHAR(100) NOT NULL,
+                            item_name VARCHAR(255) NOT NULL,
+                            price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                            status VARCHAR(20) DEFAULT 'Aberto',
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    `);
+                    console.log('✅ [DATABASE] Nova tabela orders criada.');
+                }
+            } catch (err) {
+                console.log('⚠️ [DATABASE] Erro ao atualizar orders: ', err.message);
+            }
+            
             const [adminRows] = await pool.query('SELECT * FROM users WHERE username = ?', ['admin']);
             if (adminRows.length === 0) {
                 const adminHash = await bcrypt.hash('admin123', 10);
