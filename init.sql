@@ -18,12 +18,10 @@ CREATE TABLE IF NOT EXISTS items (
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
-    item_id INT NOT NULL,
-    quantity INT NOT NULL DEFAULT 1,
-    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    item_name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     status VARCHAR(20) DEFAULT 'Aberto',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (item_id) REFERENCES items (id)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- SENHA: admin123 (hasheada com HMAC-SHA256 + salt, formato: salt:hash)
