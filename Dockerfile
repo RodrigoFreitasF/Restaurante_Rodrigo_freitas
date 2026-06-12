@@ -14,7 +14,7 @@
     # ---------------------------------------------------
     # Estágio 2: Imagem Final (Enxuta e segura)
     # ---------------------------------------------------
-    FROM node:18-alpine
+    FROM node:22-alpine
     
     ENV NODE_ENV=production
     
